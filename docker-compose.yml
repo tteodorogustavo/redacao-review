@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # Serviço Tesseract OCR
+  tesseract-ocr:
+    build:
+      context: ./services/tesseract-ocr
+      dockerfile: Dockerfile
+    container_name: redaction_tesseract_ocr
+    ports:
+      - "5001:5001"
+    networks:
+      - redaction_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Serviço Modelo Treinado
+  trained-model:
+    build:
+      context: ./services/trained-model
+      dockerfile: Dockerfile
+    container_name: redaction_trained_model
+    ports:
+      - "5002:5002"
+    networks:
+      - redaction_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    depends_on:
+      - tesseract-ocr
+
+  # Serviço Llama
+  llama:
+    build:
+      context: ./services/llama
+      dockerfile: Dockerfile
+    container_name: redaction_llama
+    ports:
+      - "5003:5003"
+    networks:
+      - redaction_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    depends_on:
+      - trained-model
+
+  # Backend/API Principal
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: redaction_backend
+    ports:
+      - "5004:5004"
+    networks:
+      - redaction_network
+    environment:
+      - FLASK_ENV=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    depends_on:
+      - tesseract-ocr
+      - trained-model
+      - llama
+
+  # Frontend (React)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: redaction_frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - redaction_network
+    environment:
+      - REACT_APP_API_URL=http://localhost:5004
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+networks:
+  redaction_network:
+    driver: bridge
+
+volumes:
+  models_data:
+    driver: local
+
