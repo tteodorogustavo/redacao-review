@@ -70,7 +70,6 @@ redaction_corrector/
 │       ├── app.py
 │       └── requirements.txt
 ├── docker-compose.yml         # Orquestração dos serviços
-├── .env                       # Variáveis de ambiente
 ├── .gitignore
 └── README.md
 ```
@@ -98,8 +97,6 @@ docker-compose up --build
 
 3. Acesse a aplicação:
 - Frontend: http://localhost:3000
-- Backend API: http://localhost:5000
-- Status dos serviços: http://localhost:5000/services-status
 
 ### Serviços Individuais
 
@@ -124,8 +121,7 @@ O sistema avalia as cinco competências do ENEM:
 1. **Upload**: Usuário envia redação (texto ou imagem)
 2. **OCR**: Extração de texto se necessário
 3. **Análise**: Avaliação das competências
-4. **Feedback**: Geração de recomendações personalizadas
-5. **Resultado**: Apresentação de pontuação e sugestões
+4. **Resultado e Feedback**: Apresentação de pontuação e geração de recomendações personalizadas
 
 ## Segurança e Arquitetura
 
