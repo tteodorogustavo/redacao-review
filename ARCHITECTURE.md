@@ -149,7 +149,6 @@ O sistema de correção automatizada de redações do ENEM foi projetado seguind
 
 #### 10.2 Validação de Entrada
 - Validação de dados em todos os endpoints
-- Sanitização de uploads de arquivos
 
 #### 10.3 Tratamento de Erros
 - Tratamento adequado de exceções
@@ -170,12 +169,40 @@ O sistema de correção automatizada de redações do ENEM foi projetado seguind
 - Logging básico sem agregação centralizada
 - Ausência de métricas de performance
 
-### 12. Próximas Iterações
+---
 
-Esta documentação representa a visão inicial da arquitetura. Após a implementação das medidas de mitigação de segurança e melhorias identificadas na modelagem de ameaças, uma nova versão desta documentação será criada refletindo as mudanças implementadas.
+## Visão Arquitetônica Final (Pós-Mitigações de Ameaças)
+
+Após a identificação dos principais riscos durante a fase inicial de arquitetura, foram implementadas as seguintes medidas de mitigação com foco em segurança, resiliência e boas práticas de sistemas distribuídos:
+
+### 1. Isolamento e Segurança dos Serviços
+- Todos os microserviços foram containerizados individualmente utilizando Docker.
+- A comunicação entre os containers ocorre exclusivamente por meio de uma rede interna Docker, garantindo que serviços sensíveis não fiquem expostos externamente.
+- Cada container contém apenas as dependências essenciais ao seu funcionamento (princípio do menor privilégio).
+
+### 2. Validação de Entradas e Tratamento de Exceções
+- Os endpoints dos serviços realizam validações básicas para garantir que os dados esperados estejam presentes (ex: texto ou arquivo enviado).
+- Todos os serviços implementam tratamento de exceções, com respostas padronizadas e mensagens amigáveis ao cliente.
+- Evita-se a propagação de erros críticos ou informações sensíveis para o usuário final.
+
+### 3. Monitoramento com Health Checks
+- Todos os microserviços expõem um endpoint `/health`, permitindo:
+  - Verificação individual da saúde dos serviços
+  - Monitoramento automatizado pelo backend central por meio do endpoint `/services-status`
+
+### 4. Restrições de Exposição
+- Apenas o frontend (React + nginx) é acessível ao usuário final (porta 3000).
+- Os serviços backend e de IA são acessados apenas internamente, via rede do Docker Compose, por meio da API orquestradora.
+- Os containers não expõem portas desnecessárias ao host.
+
+### 5. Mitigações Planejadas para Futuras Iterações
+- Autenticação e autorização utilizando JWT
+- Criptografia de tráfego com HTTPS
+- Rate limiting e controle de carga
+- Agregação centralizada de logs para observabilidade
 
 ---
 
-**Versão**: 1.0 (Pré-Modelagem de Ameaças) 
-**Data**: Junho 2025  
-**Desenvolvido por**: Lucas, Pedro, Gustavo, Thiago
+**Versão Atualizada:** 2.0 (Pós-Mitigações)  
+**Data:** Junho de 2025  
+**Desenvolvido por:** Lucas, Pedro, Gustavo, Thiago
